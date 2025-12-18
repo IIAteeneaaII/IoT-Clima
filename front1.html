@@ -1,0 +1,194 @@
+import React, { useState, useEffect } from 'react';
+import { Cloud, Droplets, Gauge, Wifi } from 'lucide-react';
+
+export default function WeatherMonitor() {
+  const [data, setData] = useState({
+    temperature: 23.04,
+    humidity: 64.72,
+    pressure: 792.47,
+    timestamp: new Date()
+  });
+  
+  const [isConnected, setIsConnected] = useState(true);
+
+  // Simular actualización de datos en tiempo real
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setData({
+        temperature: 23 + (Math.random() - 0.5) * 2,
+        humidity: 65 + (Math.random() - 0.5) * 5,
+        pressure: 792 + (Math.random() - 0.5) * 3,
+        timestamp: new Date()
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const getTemperatureColor = (temp) => {
+    if (temp < 15) return 'from-blue-400 to-blue-600';
+    if (temp < 25) return 'from-green-400 to-green-600';
+    if (temp < 30) return 'from-orange-400 to-orange-600';
+    return 'from-red-400 to-red-600';
+  };
+
+  const getHumidityColor = (humidity) => {
+    if (humidity < 40) return 'from-yellow-400 to-orange-500';
+    if (humidity < 70) return 'from-blue-400 to-cyan-500';
+    return 'from-blue-600 to-blue-800';
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4 flex items-center justify-center">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 mb-4 shadow-2xl border border-white/20">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+              <Cloud className="w-8 h-8" />
+              Clima IoT
+            </h1>
+            <div className="flex items-center gap-2">
+              <Wifi className={`w-5 h-5 ${isConnected ? 'text-green-300 animate-pulse' : 'text-red-300'}`} />
+              <span className="text-white/80 text-sm">
+                {isConnected ? 'Conectado' : 'Desconectado'}
+              </span>
+            </div>
+          </div>
+          <p className="text-white/70 text-sm">
+            Última actualización: {data.timestamp.toLocaleTimeString('es-MX')}
+          </p>
+        </div>
+
+        {/* Temperatura */}
+        <div className={`bg-gradient-to-br ${getTemperatureColor(data.temperature)} rounded-3xl p-6 mb-4 shadow-2xl transform hover:scale-105 transition-all duration-300`}>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-white/20 p-2 rounded-full">
+                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M15 13V5a3 3 0 1 0-6 0v8a5 5 0 1 0 6 0zM12 4a1 1 0 0 1 1 1v8.5a3 3 0 1 1-2 0V5a1 1 0 0 1 1-1z"/>
+                  </svg>
+                </div>
+                <h2 className="text-white text-xl font-semibold">Temperatura</h2>
+              </div>
+              <div className="ml-10">
+                <p className="text-5xl font-bold text-white mb-1">
+                  {data.temperature.toFixed(2)}°
+                </p>
+                <p className="text-white/80 text-sm">Celsius</p>
+              </div>
+            </div>
+            <div className="relative w-24 h-24">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.2)"
+                  strokeWidth="8"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="8"
+                  strokeDasharray={`${(data.temperature / 50) * 251.2} 251.2`}
+                  strokeLinecap="round"
+                  className="transition-all duration-1000"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Humedad */}
+        <div className={`bg-gradient-to-br ${getHumidityColor(data.humidity)} rounded-3xl p-6 mb-4 shadow-2xl transform hover:scale-105 transition-all duration-300`}>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-white/20 p-2 rounded-full">
+                  <Droplets className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-white text-xl font-semibold">Humedad</h2>
+              </div>
+              <div className="ml-10">
+                <p className="text-5xl font-bold text-white mb-1">
+                  {data.humidity.toFixed(2)}%
+                </p>
+                <p className="text-white/80 text-sm">Relativa</p>
+              </div>
+            </div>
+            <div className="relative w-24 h-24">
+              <svg className="w-full h-full" viewBox="0 0 100 100">
+                <rect x="20" y="20" width="60" height="60" rx="8" fill="rgba(255,255,255,0.2)" />
+                <rect 
+                  x="20" 
+                  y={20 + (60 * (1 - data.humidity / 100))} 
+                  width="60" 
+                  height={60 * (data.humidity / 100)} 
+                  rx="8" 
+                  fill="white"
+                  className="transition-all duration-1000"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Presión */}
+        <div className="bg-gradient-to-br from-purple-400 to-indigo-600 rounded-3xl p-6 shadow-2xl transform hover:scale-105 transition-all duration-300">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-white/20 p-2 rounded-full">
+                  <Gauge className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-white text-xl font-semibold">Presión</h2>
+              </div>
+              <div className="ml-10">
+                <p className="text-5xl font-bold text-white mb-1">
+                  {data.pressure.toFixed(2)}
+                </p>
+                <p className="text-white/80 text-sm">hPa (hectopascales)</p>
+              </div>
+            </div>
+            <div className="relative w-24 h-24">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.2)"
+                  strokeWidth="8"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="8"
+                  strokeDasharray={`${((data.pressure - 700) / 300) * 251.2} 251.2`}
+                  strokeLinecap="round"
+                  className="transition-all duration-1000"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-white/60 text-sm">
+            Datos actualizándose cada 3 segundos
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
