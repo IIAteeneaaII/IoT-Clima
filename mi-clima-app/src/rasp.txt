@@ -1,0 +1,51 @@
+#sudo apt-get update
+#sudo apt-get install python3-pip
+#pip3 install adafruit-circuitpython-bme280
+import time
+import board
+import busio
+from adafruit_bme280 import basic as adafruit_bme280
+
+
+i2c = board.I2C() 
+bme = None
+
+print("\n--- Prueba BME280 (Raspberry Pi) ---")
+print("Intervalo de lectura: 2 segundos\n")
+
+# Intenta conectar primero a 0x76, si falla, intenta 0x77
+try:
+    bme = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
+    print("BME280 encontrado en 0x76")
+except ValueError:
+    try:
+        bme = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x77)
+        print("BME280 encontrado en 0x77")
+    except ValueError:
+        print("ERROR: No se detectó el BME280")
+        print("Revisa VCC, GND, SDA, SCL")
+        exit() # Sale del programa si no hay sensor
+
+
+print("Sensor listo.\n")
+
+while True:
+    try:
+        print("Lectura nueva:")
+        
+        temp = bme.temperature
+        print(f"Temperatura: {temp:.2f} °C")
+        
+        hum = bme.relative_humidity
+        print(f"Humedad: {hum:.2f} %")
+        
+        pres = bme.pressure
+        print(f"Presión: {pres:.2f} hPa")
+        
+        print("---------------------")
+        
+        time.sleep(2)
+
+    except RuntimeError as error:
+        print(f"Error al leer el sensor: {error}")
+        time.sleep(2)
